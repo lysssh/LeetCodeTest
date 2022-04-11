@@ -84,7 +84,7 @@ public class KMP {
     }
 
     public static void main(String[] args) throws SocketException {
-        kmp("adfgsahahjjajs","jja");
-        DatagramSocket datagramSocket = new DatagramSocket(99911);
+        kmp("ywjrhczgltmutpuwrvapwyxanmkwfqcralxqzgqxeyexlemmxh",
+                "qqczvpmjredutndskzriigvegpzhoseskzzqwvokoyawsffutq");
     }
 }

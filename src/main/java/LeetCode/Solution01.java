@@ -1,8 +1,10 @@
 package LeetCode;
 
+import MyLeetCodeUtil.ListNode;
 import MyLeetCodeUtil.Node;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Solution01 {
     public Node copyRandomList(Node head) {
@@ -268,7 +270,7 @@ public class Solution01 {
                     borrow.put(num, 1);
                 }
             } else {
-                if(num % 2 == 1) {
+                if (num % 2 == 1) {
                     return false;
                 }
                 num /= 2;
@@ -312,7 +314,8 @@ public class Solution01 {
                 while (j < n && cs[j] == cs[i]) j++;
                 int cnt = j - i;
                 if (cnt >= 3) {
-                    tot += cnt / 3; remain[cnt % 3]++;
+                    tot += cnt / 3;
+                    remain[cnt % 3]++;
                 }
                 i = j;
             }
@@ -321,7 +324,8 @@ public class Solution01 {
                 if (i == 2) remain[i] = tot;
                 if (remain[i] != 0 && cur > 0) {
                     int t = Math.min(remain[i] * (i + 1), cur);
-                    cur -= t; tot -= t / (i + 1);
+                    cur -= t;
+                    tot -= t / (i + 1);
                 }
             }
             return base + Math.max(tot, 3 - m);
@@ -330,20 +334,330 @@ public class Solution01 {
 
     public char nextGreatestLetter(char[] letters, char target) {
         int l = 0;
-        int r = letters.length-1;
+        int r = letters.length - 1;
         while (l < r) {
-            int mid = l + ((r-l) >> 1);
-            if(letters[mid]  > target) {
+            int mid = l + ((r - l) >> 1);
+            if (letters[mid] > target) {
                 r = mid;
-            }else {
+            } else {
                 l = mid + 1;
             }
         }
         return letters[r];
     }
 
+    public int myAtoi(String str) {
+        Automaton automaton = new Automaton();
+        int length = str.length();
+        for (int i = 0; i < length; ++i) {
+            automaton.get(str.charAt(i));
+        }
+        return (int) (automaton.sign * automaton.ans);
+    }
+
+
+    static class Automaton {
+        public int sign = 1;
+        public long ans = 0;
+        private String state = "start";
+        private Map<String, String[]> table = new HashMap<String, String[]>() {{
+            put("start", new String[]{"start", "signed", "in_number", "end"});
+            put("signed", new String[]{"end", "end", "in_number", "end"});
+            put("in_number", new String[]{"end", "end", "in_number", "end"});
+            put("end", new String[]{"end", "end", "end", "end"});
+        }};
+
+        public void get(char c) {
+            state = table.get(state)[get_col(c)];
+            if ("in_number".equals(state)) {
+                ans = ans * 10 + c - '0';
+                ans = sign == 1 ? Math.min(ans, (long) Integer.MAX_VALUE) : Math.min(ans, -(long) Integer.MIN_VALUE);
+            } else if ("signed".equals(state)) {
+                sign = c == '+' ? 1 : -1;
+            }
+        }
+
+        private int get_col(char c) {
+            if (c == ' ') {
+                return 0;
+            }
+            if (c == '+' || c == '-') {
+                return 1;
+            }
+            if (Character.isDigit(c)) {
+                return 2;
+            }
+            return 3;
+        }
+
+    }
+
+    public int[][] insert(int[][] intervals, int[] newInterval) {
+        if (intervals.length == 0) {
+            return new int[][]{{newInterval[0], newInterval[1]}};
+        }
+        int start = findVal(intervals, newInterval[0]);
+        int end = findVal(intervals, newInterval[1]);
+        int i = 0;
+        while (i < start) {
+
+        }
+
+
+        return new int[0][];
+    }
+
+    public int findVal(int[][] arr, int val) {
+        int left = 0;
+        int right = arr.length - 1;
+        while (left < right) {
+            int mid = left + ((right - left) >> 1);
+            if (arr[mid][1] == val) {
+                return mid;
+            } else if (arr[mid][1] > val) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+
+
+    public ArrayList<Integer> GetLeastNumbers_Solution(int[] input, int k) {
+        int[] sum = new int[1001];
+        for (int i = 0; i < input.length; i++) {
+            sum[input[i]]++;
+        }
+        ArrayList<Integer> res = new ArrayList<>();
+        for (int i = 0; i < 1001 && k > 0; i++) {
+            for (int j = sum[i]; j > 0 && k > 0; j--, k--) {
+                res.add(i);
+            }
+        }
+        return res;
+    }
+
+    public int[] twoSum(int[] numbers, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < numbers.length; i++) {
+            int num = target - numbers[i];
+            if (map.containsKey(num)) {
+                return new int[]{map.get(num), i + 1};
+            } else {
+                map.put(numbers[i], i + 1);
+            }
+        }
+        return new int[]{0, 0};
+    }
+
+    public int countPrimeSetBits(int left, int right) {
+        int sum = 0;
+        Set<Integer> set = new HashSet<>();
+        set.add(2);
+        set.add(3);
+        set.add(5);
+        set.add(7);
+        set.add(11);
+        set.add(13);
+        set.add(17);
+        set.add(19);
+        set.add(23);
+        for (int i = left; i <= right; i++) {
+            int x = i;
+            int count = 0;
+            while (x > 0) {
+                x = x - ((x & -x));
+                count++;
+            }
+            if (set.contains(count)) {
+                sum++;
+            }
+        }
+        return sum;
+    }
+
+    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
+        List<Integer> findMinHeightTrees = new ArrayList<>();
+        Set<Integer>[] sets = new Set[n];
+        int[] degree = new int[n];
+        for (int[] edge : edges) {
+            if (sets[edge[0]] == null) {
+                sets[edge[0]] = new HashSet<>();
+            }
+            if (sets[edge[1]] == null) {
+                sets[edge[1]] = new HashSet<>();
+            }
+            sets[edge[0]].add(edge[1]);
+            sets[edge[1]].add(edge[0]);
+            degree[edge[0]]++;
+            degree[edge[1]]++;
+        }
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i = 0; i < n; i++) {
+            if (degree[i] == 1) {
+                queue.offer(i);
+            }
+        }
+        int remainNodes = n;
+        while (remainNodes > 2) {
+            int size = queue.size();
+            remainNodes -= size;
+            for (int i = 0; i < size; i++) {
+                int cur = queue.poll();
+                for (int v : sets[cur]) {
+                    degree[v]--;
+                    if (degree[v] == 1) {
+                        queue.offer(v);
+                    }
+                }
+            }
+        }
+        while (!queue.isEmpty()) {
+            findMinHeightTrees.add(queue.poll());
+        }
+        return findMinHeightTrees;
+    }
+
+
+    public boolean rotateString(String s, String goal) {
+        if (s.length() != goal.length()) {
+            return false;
+        }
+        return KMP(s + s, goal);
+    }
+
+    public boolean KMP(String s, String goal) {
+        int[] next = next(goal);
+        int i = 0;
+        int j = 0;
+        while (i < s.length() && j < goal.length()) {
+            if (s.charAt(i) == goal.charAt(j)) {
+                i++;
+                j++;
+            } else {
+                while (j >= 0) {
+                    if (s.charAt(i) == goal.charAt(j)) {
+                        break;
+                    }
+                    if (j == 0) {
+                        i++;
+                        break;
+                    }
+                    j = next[j];
+                }
+            }
+        }
+        return j == goal.length();
+    }
+
+    public int[] next(String s) {
+        int[] next = new int[s.length()];
+        int len = 0;
+        int i = 1;
+        while (i < s.length()) {
+            if (s.charAt(i) == s.charAt(len)) {
+                len++;
+                next[i] = len;
+                i++;
+            } else if (len > 0) {
+                len = next[len - 1];
+            } else {
+                i++;
+            }
+        }
+        for (i = next.length - 2; i >= 0; i--) {
+            next[i + 1] = next[i];
+        }
+        next[0] = -1;
+        return next;
+    }
+
+
+    public boolean reachingPoints(int sx, int sy, int tx, int ty) {
+        while (tx > sx && ty > sy && tx != ty) {
+            if (tx > ty) {
+                tx %= ty;
+            } else {
+                ty %= tx;
+            }
+        }
+        if (tx == sx && ty == sy) {
+            return true;
+        } else if (tx == sx) {
+            return ty > sy && (ty - sy) % tx == 0;
+        } else if (ty == sy) {
+            return tx > sx && (tx - sx) % ty == 0;
+        } else {
+            return false;
+        }
+    }
+
+    public int uniqueMorseRepresentations(String[] words) {
+        String[] encoding = {".-", "-...", "-.-.", "-..", ".", "..-.", "--.", "....", "..", ".---", "-.-", ".-..", "--", "-.", "---", ".--.", "--.-", ".-.", "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--.."};
+        Set<String> res = new HashSet<>();
+        Set<String> set = new HashSet<>();
+        for (int i = 0; i < words.length; i++) {
+            if (set.contains(words[i])) {
+                continue;
+            }
+            set.add(words[i]);
+            StringBuilder sc = new StringBuilder();
+            for (int j = 0; j < words[i].length(); j++) {
+                sc.append(encoding[words[i].charAt(j) - 'a']);
+            }
+            res.add(sc.toString());
+        }
+        return res.size();
+    }
+
+    int countNumbersWithUniqueDigits = 0;
+    public int countNumbersWithUniqueDigits(int n) {
+        if (n == 0) {
+            return 1;
+        }
+        if (n == 1) {
+            return 10;
+        }
+        List<Integer> list = new ArrayList<>();
+        int num = (int) Math.pow(10, n) - 1;
+        countNumbersWithUniqueDigits = num+1;
+        while (num > 0) {
+            list.add(num % 10);
+            num /= 10;
+        }
+        int[] dp = new int[list.size()];
+        Arrays.fill(dp,-1);
+        countNumberDP(list.size()-1,list,true,new HashSet<>());
+        return countNumbersWithUniqueDigits;
+    }
+
+    public int countNumberDP(int index, List<Integer> list, boolean flag, Set<Integer> set) {
+        if(index == -1) {
+            countNumbersWithUniqueDigits++;
+            return countNumbersWithUniqueDigits;
+        }
+        int limit  = flag ? list.get(index) : 9;
+        int num = countNumbersWithUniqueDigits;
+        for(int i = 0; i <= limit; i++) {
+            if(set.isEmpty() && i == 0) {
+                countNumberDP(index-1,list,flag && i == limit,set);
+            }else {
+                flag = flag && i == limit;
+                if(!flag && i > 1) {
+                    countNumbersWithUniqueDigits += num;
+                    continue;
+                }
+                set.add(i);
+                num = countNumberDP(index-1,list,flag,set) - num;
+            }
+        }
+        return countNumbersWithUniqueDigits;
+    }
+
     public static void main(String[] args) {
         Solution01 s1 = new Solution01();
-        s1.nextGreatestLetter(new char[]{'c','f','j'},'a');
+        int ans = s1.countNumbersWithUniqueDigits(8);
+        System.out.println();
     }
 }
